@@ -63,7 +63,8 @@ async function init() {
     return texture;
   }
 
-  const tileTexture = await loadTexture('/tiles.jpg');
+  const base = import.meta.env.BASE_URL;
+  const tileTexture = await loadTexture(`${base}tiles.jpg`);
 
   const tileSampler = device.createSampler({
     magFilter: 'linear',
@@ -75,9 +76,9 @@ async function init() {
   // Load Cubemap
   const cubemap = new Cubemap(device);
   const skyTexture = await cubemap.load({
-    xpos: '/xpos.jpg', xneg: '/xneg.jpg',
-    ypos: '/ypos.jpg', yneg: '/yneg.jpg',
-    zpos: '/zpos.jpg', zneg: '/zneg.jpg'
+    xpos: `${base}xpos.jpg`, xneg: `${base}xneg.jpg`,
+    ypos: `${base}ypos.jpg`, yneg: `${base}yneg.jpg`,
+    zpos: `${base}zpos.jpg`, zneg: `${base}zneg.jpg`
   });
   const skySampler = device.createSampler({
     magFilter: 'linear',
