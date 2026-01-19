@@ -4,8 +4,6 @@ export class Sphere {
   private commonUniformBuffer: GPUBuffer;
   private sphereUniformBuffer: GPUBuffer;
   private lightUniformBuffer: GPUBuffer;
-  private center: number[];
-  private radius: number;
   private positionBuffer!: GPUBuffer;
   private indexBuffer!: GPUBuffer;
   private vertexCount!: number;
@@ -24,22 +22,12 @@ export class Sphere {
     this.sphereUniformBuffer = sphereUniformBuffer;
     this.lightUniformBuffer = lightUniformBuffer;
 
-    this.center = [0, 0, 0];
-    this.radius = 1;
-
     this.createGeometry();
     this.createPipeline();
   }
 
   update(center: number[], radius: number): void {
-    this.center = center;
-    this.radius = radius;
-
-    // Update sphere specific uniforms
-    const data = new Float32Array(4);
-    data.set(this.center, 0);
-    data[3] = this.radius;
-
+    const data = new Float32Array([...center, radius]);
     this.device.queue.writeBuffer(this.sphereUniformBuffer, 0, data);
   }
 
