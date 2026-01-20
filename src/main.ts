@@ -237,13 +237,13 @@ async function init(): Promise<void> {
     keys[e.key.toUpperCase()] = false;
   });
 
-  // --- Mouse Interaction ---
+  // --- Pointer Interaction (supports mouse, touch, and pen) ---
 
   /** Current interaction mode */
   let mode: InteractionMode = InteractionMode.None;
-  /** Previous mouse X position */
+  /** Previous pointer X position */
   let oldX = 0;
-  /** Previous mouse Y position */
+  /** Previous pointer Y position */
   let oldY = 0;
   /** Previous hit point for sphere dragging */
   let prevHit: Vector;
@@ -258,9 +258,9 @@ async function init(): Promise<void> {
   }
 
   /**
-   * Handles mouse/touch down - determines interaction mode.
-   * @param x - Mouse X position in canvas coordinates
-   * @param y - Mouse Y position in canvas coordinates
+   * Handles pointer down - determines interaction mode.
+   * @param x - Pointer X position in canvas coordinates
+   * @param y - Pointer Y position in canvas coordinates
    */
   function startDrag(x: number, y: number): void {
     oldX = x;
@@ -294,13 +294,13 @@ async function init(): Promise<void> {
   }
 
   /**
-   * Handles mouse/touch move during drag.
-   * @param x - Current mouse X position
-   * @param y - Current mouse Y position
+   * Handles pointer move during drag.
+   * @param x - Current pointer X position
+   * @param y - Current pointer Y position
    */
   function duringDrag(x: number, y: number): void {
     if (mode === InteractionMode.OrbitCamera) {
-      // Rotate camera based on mouse delta
+      // Rotate camera based on pointer delta
       angleY -= x - oldX;
       angleX -= y - oldY;
       angleX = Math.max(-89.999, Math.min(89.999, angleX)); // Clamp pitch
@@ -339,26 +339,34 @@ async function init(): Promise<void> {
   }
 
   /**
-   * Handles mouse/touch up - ends interaction.
+   * Handles pointer up - ends interaction and releases capture.
    */
   function stopDrag(): void {
     mode = InteractionMode.None;
   }
 
-  // Mouse event listeners
-  canvas.addEventListener('mousedown', (e) => {
+  // Pointer event listeners (unified mouse/touch/pen input)
+  canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
+    canvas.setPointerCapture(e.pointerId); // Capture pointer for smooth dragging
     startDrag(e.offsetX, e.offsetY);
   });
 
-  window.addEventListener('mousemove', (e) => {
+  canvas.addEventListener('pointermove', (e) => {
     if (mode !== InteractionMode.None) {
-      const rect = canvas.getBoundingClientRect();
-      duringDrag(e.clientX - rect.left, e.clientY - rect.top);
+      duringDrag(e.offsetX, e.offsetY);
     }
   });
 
-  window.addEventListener('mouseup', stopDrag);
+  canvas.addEventListener('pointerup', (e) => {
+    canvas.releasePointerCapture(e.pointerId);
+    stopDrag();
+  });
+
+  canvas.addEventListener('pointercancel', (e) => {
+    canvas.releasePointerCapture(e.pointerId);
+    stopDrag();
+  });
 
   // --- Rendering ---
 
